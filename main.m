@@ -9,9 +9,8 @@ ay = 0;
 % Define the target trajectory for the car
 target_trajectory = [0 0; 10 5; 20 10; 30 5; 40 0];
 
-% Define the control inputs for the car
-throttle = 0.2;
-steering_angle = 0.1;
+% Define the target speed for the car
+target_speed = 10; % meters per second
 
 % Set the simulation time step and simulation time
 dt = 0.1;
@@ -32,13 +31,18 @@ for i = 1:length(t_array)
     pos_error = norm([x y] - target_trajectory(i,:));
     heading_error = atan2(target_trajectory(i,2) - y, target_trajectory(i,1) - x) - atan2(vy, vx);
 
-    % Calculate the control inputs using a simple proportional controller
-    throttle_cmd = throttle;
+    % Calculate the target longitudinal velocity based on the target speed
+    target_vx = target_speed * cos(heading_error);
+
+    % Calculate the throttle command using a simple proportional controller
+    throttle_cmd = 0.2 * (target_vx - vx);
+
+    % Calculate the steering angle command using a simple proportional controller
     steering_angle_cmd = heading_error * 0.1;
 
     % Update the car state using the dynamics equations
-    ax = throttle_cmd * cos(steering_angle) - 0.1 * vx;
-    ay = throttle_cmd * sin(steering_angle);
+    ax = throttle_cmd * cos(steering_angle_cmd) - 0.1 * vx;
+    ay = throttle_cmd * sin(steering_angle_cmd);
     vx = vx + ax * dt;
     vy = vy + ay * dt;
     x = x + vx * dt;
