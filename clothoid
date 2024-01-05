@@ -2,6 +2,9 @@
 p1 = [0, 0]; % First point
 p2 = [10, 10]; % Second point
 
+% Define the number of segments
+n = 5; % Number of segments to connect the points
+
 % Define the arc parameters
 r = 5; % Radius of the arc
 theta1 = pi/4; % Starting angle of the arc
@@ -25,9 +28,6 @@ x = c(1) + r*cos(t); % Calculate the x-coordinates of the arc
 y = c(2) + r*sin(t); % Calculate the y-coordinates of the arc
 plot(x, y, 'g'); % Plot the arc in green
 
-% Plot the straight line
-plot([p1(1), p2(1)], [p1(2), p2(2)], 'k'); % Plot the straight line in black
-
 % Plot the clothoid
 s = linspace(0, L, 100); % Generate 100 points along the clothoid
 psi = sqrt(2*s/A) + phi; % Calculate the angle of the clothoid
@@ -35,7 +35,25 @@ x = p1(1) + A*sqrt(pi)*fresnelc(sqrt(2*s/A/pi)); % Calculate the x-coordinates o
 y = p1(2) + A*sqrt(pi)*fresnels(sqrt(2*s/A/pi)); % Calculate the y-coordinates of the clothoid
 plot(x, y, 'm'); % Plot the clothoid in magenta
 
+% Find the sequence of points
+d = norm(p2 - p1)/n; % Distance between each point
+v = (p2 - p1)/norm(p2 - p1); % Unit vector from p1 to p2
+p = zeros(n+1, 2); % Initialize the array of points
+p(1, :) = p1; % First point is p1
+p(n+1, :) = p2; % Last point is p2
+for i = 2:n % Loop through the intermediate points
+    p(i, :) = p1 + (i-1)*d*v; % Calculate the point using vector addition
+end
+
+% Plot the sequence of points
+plot(p(:, 1), p(:, 2), 'ko', 'MarkerSize', 10, 'MarkerFaceColor', 'k'); % Plot the points in black
+
+% Plot the straight lines
+for i = 1:n % Loop through the segments
+    plot([p(i, 1), p(i+1, 1)], [p(i, 2), p(i+1, 2)], 'k'); % Plot the straight line in black
+end
+
 % Add legend and title
-legend('Point 1', 'Point 2', 'Arc', 'Straight line', 'Clothoid', 'Location', 'best');
+legend('Point 1', 'Point 2', 'Arc', 'Clothoid', 'Sequence of points', 'Location', 'best');
 title('Connecting two points with an arc, a straight line, and a clothoid curve');
 hold off;
