@@ -1,0 +1,41 @@
+% Define the two points
+p1 = [0, 0]; % First point
+p2 = [10, 10]; % Second point
+
+% Define the arc parameters
+r = 5; % Radius of the arc
+theta1 = pi/4; % Starting angle of the arc
+theta2 = pi/2; % Ending angle of the arc
+c = [r*cos(theta1), r*sin(theta1)]; % Center of the arc
+
+% Define the clothoid parameters
+L = 10; % Length of the clothoid
+A = 1; % Scaling factor of the clothoid
+phi = 0; % Initial angle of the clothoid
+
+% Plot the points
+plot(p1(1), p1(2), 'ro', 'MarkerSize', 10, 'MarkerFaceColor', 'r'); % Plot the first point in red
+hold on;
+plot(p2(1), p2(2), 'bo', 'MarkerSize', 10, 'MarkerFaceColor', 'b'); % Plot the second point in blue
+axis equal;
+
+% Plot the arc
+t = linspace(theta1, theta2, 100); % Generate 100 points along the arc
+x = c(1) + r*cos(t); % Calculate the x-coordinates of the arc
+y = c(2) + r*sin(t); % Calculate the y-coordinates of the arc
+plot(x, y, 'g'); % Plot the arc in green
+
+% Plot the straight line
+plot([p1(1), p2(1)], [p1(2), p2(2)], 'k'); % Plot the straight line in black
+
+% Plot the clothoid
+s = linspace(0, L, 100); % Generate 100 points along the clothoid
+psi = sqrt(2*s/A) + phi; % Calculate the angle of the clothoid
+x = p1(1) + A*sqrt(pi)*fresnelc(sqrt(2*s/A/pi)); % Calculate the x-coordinates of the clothoid
+y = p1(2) + A*sqrt(pi)*fresnels(sqrt(2*s/A/pi)); % Calculate the y-coordinates of the clothoid
+plot(x, y, 'm'); % Plot the clothoid in magenta
+
+% Add legend and title
+legend('Point 1', 'Point 2', 'Arc', 'Straight line', 'Clothoid', 'Location', 'best');
+title('Connecting two points with an arc, a straight line, and a clothoid curve');
+hold off;
