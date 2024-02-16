@@ -1,0 +1,50 @@
+% Load an image and convert it to grayscale
+img = imread('cameraman.tif');
+img = rgb2gray(img);
+
+% Convert the image to a binary vector
+imgvec = img(:);
+imgbin = de2bi(imgvec,8,'left-msb');
+imgbin = imgbin(:);
+
+% Transfer the binary vector to the GPU
+imgbin_gpu = gpuArray(imgbin);
+
+% Perform convolutional encoding and PSK modulation on the GPU
+M = 16; % Modulation order
+gpuconvenc = comm.gpu.ConvolutionalEncoder;
+gpupskmod = comm.gpu.PSKModulator(M,pi/16,'BitInput',true);
+gpupskdemod = comm.gpu.PSKDemodulator(M,pi/16,'BitOutput',true);
+gpudec = comm.gpu.ViterbiDecoder('InputFormat','Hard');
+
+coded = gpuconvenc(imgbin_gpu);
+modulated = gpupskmod(coded);
+
+% Simulate an AWGN channel on the GPU
+gpuawgn = comm.gpu.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)','SNR',10);
+received = gpuawgn(modulated);
+
+% Perform PSK demodulation and convolutional decoding on the GPU
+demodulated = gpupskdemod(received);
+decoded = gpudec(demodulated);
+
+% Transfer the decoded vector back to the CPU
+decoded = gather(decoded);
+
+% Convert the decoded vector to an image
+decodedbin = reshape(decoded,length(imgvec),8);
+decodedvec = bi2de(decodedbin,'left-msb');
+decodedimg = reshape(decodedvec,size(img));
+
+% Display the original and decoded images
+figure;
+subplot(1,2,1); imshow(img); title('Original Image');
+subplot(1,2,2); imshow(decodedimg); title('Decoded Image');
+
+% Compute the MSE and PSNR between the original and decoded images
+mse = immse(img,decodedimg);
+psnr = psnr(img,decodedimg);
+
+% Display the MSE and PSNR values
+fprintf('MSE = %f\n',mse);
+fprintf('PSNR = %f dB\n',psnr);
